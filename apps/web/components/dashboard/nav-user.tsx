@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import {
   BadgeCheck,
   Bell,
@@ -9,11 +10,8 @@ import {
   Sparkles,
 } from "lucide-react"
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@actify/ui/components/avatar"
+import type { UserData } from "@/lib/get-user-data"
+import { Avatar, AvatarFallback } from "@actify/ui/components/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,16 +28,59 @@ import {
   useSidebar,
 } from "@actify/ui/components/sidebar"
 
-export function NavUser({
-  user,
-}: {
-  user: {
-    name: string
-    email: string
-    avatar: string
+function initialsFromName(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+  if (parts.length >= 2) {
+    return `${parts[0]!.charAt(0)}${parts[parts.length - 1]!.charAt(0)}`.toUpperCase()
   }
+  return name.slice(0, 2).toUpperCase() || "?"
+}
+
+function ProfileAvatar({
+  name,
+  image,
+  className,
+}: {
+  name: string
+  image: string | null
+  className?: string
 }) {
+  const initials = initialsFromName(name)
+
+  if (image) {
+    return (
+      <div
+        className={`relative size-8 shrink-0 overflow-hidden rounded-lg ${className ?? ""}`}
+      >
+        <Image
+          src={image}
+          alt={name}
+          width={32}
+          height={32}
+          className="size-full object-cover"
+          sizes="32px"
+          unoptimized={image.startsWith("data:")}
+        />
+      </div>
+    )
+  }
+
+  return (
+    <Avatar className={`size-8 rounded-lg ${className ?? ""}`}>
+      <AvatarFallback className="rounded-lg text-xs">{initials}</AvatarFallback>
+    </Avatar>
+  )
+}
+
+export function NavUser({ user }: { user: UserData | null }) {
   const { isMobile } = useSidebar()
+
+  const display = user ?? {
+    id: "",
+    name: "Account",
+    email: "",
+    image: null,
+  }
 
   return (
     <SidebarMenu>
@@ -50,15 +91,14 @@ export function NavUser({
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-              </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
-                <span className="truncate text-xs">{user.email}</span>
+              <ProfileAvatar name={display.name} image={display.image} />
+              <div className="grid min-w-0 flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-medium">{display.name}</span>
+                <span className="truncate text-xs text-muted-foreground">
+                  {display.email || "—"}
+                </span>
               </div>
-              <ChevronsUpDown className="ml-auto size-4" />
+              <ChevronsUpDown className="ml-auto size-4 shrink-0" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -69,13 +109,12 @@ export function NavUser({
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-                </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
-                  <span className="truncate text-xs">{user.email}</span>
+                <ProfileAvatar name={display.name} image={display.image} />
+                <div className="grid min-w-0 flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-medium">{display.name}</span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    {display.email || "—"}
+                  </span>
                 </div>
               </div>
             </DropdownMenuLabel>

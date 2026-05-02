@@ -1,9 +1,12 @@
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
+import { getUserData } from "@/lib/get-user-data"
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  return <DashboardShell>{children}</DashboardShell>
+  const user = await getUserData()
+
+  return <DashboardShell user={user}>{children}</DashboardShell>
 }

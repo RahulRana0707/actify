@@ -12,8 +12,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@hookform/resolvers": "^5.2.2",
+    "@actify/database": "workspace:*",
     "@actify/ui": "workspace:*",
+    "@hookform/resolvers": "^5.2.2",
+    "better-auth": "^1.6.9",
     "lucide-react": "^1.14.0",
     "next": "16.1.6",
     "next-themes": "^0.4.6",
@@ -23,12 +25,12 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@actify/eslint-config": "workspace:^",
+    "@actify/typescript-config": "workspace:*",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "^25.1.0",
     "@types/react": "^19.2.10",
     "@types/react-dom": "^19.2.3",
-    "@actify/eslint-config": "workspace:^",
-    "@actify/typescript-config": "workspace:*",
     "eslint": "^9.39.2",
     "typescript": "^5.9.3"
   }

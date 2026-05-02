@@ -2,6 +2,7 @@
 
 import { AppSidebar } from "@/components/dashboard/app-sidebar"
 import { DashboardBreadcrumb } from "@/components/dashboard/dashboard-breadcrumb"
+import type { UserData } from "@/lib/get-user-data"
 import { Separator } from "@actify/ui/components/separator"
 import {
   SidebarInset,
@@ -9,10 +10,16 @@ import {
   SidebarTrigger,
 } from "@actify/ui/components/sidebar"
 
-export function DashboardShell({ children }: { children: React.ReactNode }) {
+export function DashboardShell({
+  children,
+  user,
+}: {
+  children: React.ReactNode
+  user: UserData | null
+}) {
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <AppSidebar user={user} />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2">
           <div className="flex items-center gap-2 px-4">

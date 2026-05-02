@@ -17,6 +17,7 @@ import {
 import { NavMain } from "@/components/dashboard/nav-main"
 import { NavUser } from "@/components/dashboard/nav-user"
 import type { NavMainGroup } from "@/components/dashboard/nav-main"
+import type { UserData } from "@/lib/get-user-data"
 import {
   Sidebar,
   SidebarContent,
@@ -28,11 +29,6 @@ import {
 } from "@actify/ui/components/sidebar"
 
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navGroups: [
     {
       label: "Platform",
@@ -100,7 +96,10 @@ const data = {
   ] satisfies NavMainGroup[],
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({
+  user,
+  ...props
+}: React.ComponentProps<typeof Sidebar> & { user: UserData | null }) {
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
@@ -124,7 +123,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain groups={data.navGroups} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={user} />
       </SidebarFooter>
     </Sidebar>
   )

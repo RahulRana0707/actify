@@ -1,6 +1,8 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -26,10 +28,10 @@ import {
 } from "@actify/ui/components/field"
 import { Separator } from "@actify/ui/components/separator"
 
-export enum AuthMode {
-  Login = "login",
-  Signup = "signup",
-}
+import { signIn, signUp } from "@/actions/auth"
+import { authClient } from "@/lib/auth-client"
+import { AuthMode } from "@/lib/auth-mode"
+import { ServerResponseType } from "@/types/server"
 
 const loginSchema = z.object({
   email: z.string().email("Enter a valid email address."),
@@ -75,23 +77,57 @@ function SocialDivider() {
   )
 }
 
-function SocialButtons() {
+function SocialButtons({ authFlow }: { authFlow: "login" | "signup" }) {
+  const [pending, setPending] = useState<"google" | "github" | null>(null)
+
+  const errorCallbackURL = authFlow === "login" ? "/login" : "/signup"
+
+  async function handleSocial(provider: "google" | "github") {
+    try {
+      setPending(provider)
+      const result = await authClient.signIn.social({
+        provider,
+        callbackURL: "/",
+        errorCallbackURL,
+      })
+
+      if (result.error) {
+        toast.error(
+          result.error.message ?? "Could not continue with this provider."
+        )
+        return
+      }
+    } catch {
+      toast.error("Something went wrong. Please try again.")
+    } finally {
+      setPending(null)
+    }
+  }
+
   return (
     <div className="grid grid-cols-2 gap-2">
       <Button
         variant="outline"
         type="button"
-        onClick={() => toast.info("Google auth will be enabled soon.")}
+        disabled={pending !== null}
+        onClick={() => void handleSocial("google")}
       >
-        <GoogleIcon className="size-4" />
+        {pending === "google" && (
+          <Loader2Icon className="size-4 animate-spin" />
+        )}
+        {pending !== "google" && <GoogleIcon className="size-4" />}
         Google
       </Button>
       <Button
         variant="outline"
         type="button"
-        onClick={() => toast.info("GitHub auth will be enabled soon.")}
+        disabled={pending !== null}
+        onClick={() => void handleSocial("github")}
       >
-        <GithubIcon className="size-4" />
+        {pending === "github" && (
+          <Loader2Icon className="size-4 animate-spin" />
+        )}
+        {pending !== "github" && <GithubIcon className="size-4" />}
         GitHub
       </Button>
     </div>
@@ -99,6 +135,7 @@ function SocialButtons() {
 }
 
 function LoginForm() {
+  const router = useRouter()
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -108,9 +145,22 @@ function LoginForm() {
   })
 
   async function onSubmit(values: LoginValues) {
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    toast.success(`Welcome back, ${values.email}`)
-    form.reset({ email: values.email, password: "" })
+    try {
+      const result = await signIn({
+        email: values.email.trim(),
+        password: values.password,
+      })
+
+      if (result.status === ServerResponseType.ERROR) {
+        toast.error(result.errorMessage ?? "Could not sign you in.")
+        return
+      }
+
+      router.replace("/")
+      router.refresh()
+    } catch {
+      toast.error("Something went wrong. Please try again.")
+    }
   }
 
   return (
@@ -170,12 +220,13 @@ function LoginForm() {
       </Button>
 
       <SocialDivider />
-      <SocialButtons />
+      <SocialButtons authFlow="login" />
     </form>
   )
 }
 
 function SignupForm() {
+  const router = useRouter()
   const form = useForm<SignupValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
@@ -187,9 +238,23 @@ function SignupForm() {
   })
 
   async function onSubmit(values: SignupValues) {
-    await new Promise((resolve) => setTimeout(resolve, 600))
-    toast.success(`Account ready, ${values.name}`)
-    form.reset()
+    try {
+      const result = await signUp({
+        name: values.name.trim(),
+        email: values.email.trim(),
+        password: values.password,
+      })
+
+      if (result.status === ServerResponseType.ERROR) {
+        toast.error(result.errorMessage ?? "Could not create your account.")
+        return
+      }
+
+      router.replace("/")
+      router.refresh()
+    } catch {
+      toast.error("Something went wrong. Please try again.")
+    }
   }
 
   return (
@@ -284,7 +349,7 @@ function SignupForm() {
       </Button>
 
       <SocialDivider />
-      <SocialButtons />
+      <SocialButtons authFlow="signup" />
     </form>
   )
 }
