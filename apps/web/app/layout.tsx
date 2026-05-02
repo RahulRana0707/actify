@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@actify/ui/lib/utils"
 
 import { Toaster } from "@actify/ui/components/sonner"
+import { TooltipProvider } from "@actify/ui/components/tooltip"
 
 const figtree = Figtree({ subsets: ["latin"], variable: "--font-sans" })
 
@@ -31,7 +32,7 @@ export default function RootLayout({
     >
       <body>
         <ThemeProvider>
-          {children}
+          <TooltipProvider>{children}</TooltipProvider>
           <Toaster />
         </ThemeProvider>
       </body>
